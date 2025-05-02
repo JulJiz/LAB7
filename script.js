@@ -118,6 +118,22 @@ const biblioteca = {
 
 // Función para inicializar datos de ejemplo
 function init() {
+    // Agregar libros de ejemplo
+    biblioteca.agregarLibro("Cien años de soledad", "Gabriel García Márquez", 1967);
+    biblioteca.agregarLibro("1984", "George Orwell", 1949);
+    biblioteca.agregarLibro("El Principito", "Antoine de Saint-Exupéry", 1943);
+    biblioteca.agregarLibro("Don Quijote", "Miguel de Cervantes", 1605);
+    biblioteca.agregarLibro("Orgullo y prejuicio", "Jane Austen", 1813);
+    
+    // Agregar usuarios de ejemplo
+    biblioteca.agregarUsuario("Ana López", "ana@email.com");
+    biblioteca.agregarUsuario("Carlos Ruiz", "carlos@email.com");
+    
+    // Realizar algunos préstamos
+    biblioteca.prestarLibro(1, 1);
+    biblioteca.prestarLibro(2, 2);
+    biblioteca.prestarLibro(5, 1);
+    
     // Renderizar datos
     renderLibros();
     renderUsuarios();
@@ -146,21 +162,27 @@ function renderLibros() {
         celdaAño.textContent = libro.año;
         
         const celdaDisponible = document.createElement("td");
-        celdaDisponible.textContent = libro.disponible ? "Sí" : "No";
-        
-        const celdaAcciones = document.createElement("td");
-        const botonEliminar = document.createElement("button");
-        botonEliminar.textContent = "Eliminar";
-        botonEliminar.onclick = function() {
-            eliminarLibro(libro.id);
-        };
-        
-        if (!libro.disponible) {
-            botonEliminar.disabled = true;
-            botonEliminar.title = "No se puede eliminar un libro prestado";
+        if (libro.disponible) {
+            celdaDisponible.innerHTML = '<span class="disponible-si">✓ Sí</span>';
+        } else {
+            celdaDisponible.innerHTML = '<span class="disponible-no">✗ No</span>';
         }
         
-        celdaAcciones.appendChild(botonEliminar);
+        const celdaAcciones = document.createElement("td");
+        
+        if (!libro.disponible) {
+            celdaAcciones.textContent = "No disponible";
+        } else {
+            const botonEliminar = document.createElement("button");
+            botonEliminar.textContent = "Eliminar";
+            botonEliminar.onclick = function() {
+                eliminarLibro(libro.id);
+            };
+            botonEliminar.style.backgroundColor = "#dc3545";
+            botonEliminar.style.color = "white";
+            
+            celdaAcciones.appendChild(botonEliminar);
+        }
         
         fila.appendChild(celdaId);
         fila.appendChild(celdaTitulo);
@@ -174,9 +196,25 @@ function renderLibros() {
     
     if (!document.getElementById("formNuevoLibro")) {
         const divLibros = document.getElementById("libros");
+        
+        // Crear el botón de agregar libro que estará en la parte superior
+        const botonAgregar = document.createElement("button");
+        botonAgregar.textContent = "Agregar Libro";
+        botonAgregar.id = "botonAgregarLibro";
+        botonAgregar.style.marginBottom = "10px";
+        botonAgregar.style.padding = "8px 16px";
+        botonAgregar.style.backgroundColor = "#4CAF50";
+        botonAgregar.style.color = "white";
+        botonAgregar.style.fontWeight = "bold";
+        botonAgregar.style.border = "none";
+        botonAgregar.style.borderRadius = "4px";
+        botonAgregar.style.cursor = "pointer";
+        
+        // Crear el formulario que aparecerá al hacer clic en el botón
         const form = document.createElement("div");
         form.id = "formNuevoLibro";
         form.className = "form-group";
+        form.style.display = "none"; // Oculto por defecto
         form.innerHTML = `
             <h3>Agregar nuevo libro</h3>
             <input type="text" id="nuevoLibroTitulo" placeholder="Título" required>
@@ -185,7 +223,20 @@ function renderLibros() {
             <button onclick="agregarNuevoLibro()">Agregar Libro</button>
         `;
         
+        // Agregar evento al botón para mostrar/ocultar el formulario
+        botonAgregar.onclick = function() {
+            if (form.style.display === "none") {
+                form.style.display = "flex";
+                this.textContent = "Cancelar";
+            } else {
+                form.style.display = "none";
+                this.textContent = "Agregar Libro";
+            }
+        };
+        
+        // Insertar el botón y el formulario antes de la tabla
         const tabla = document.getElementById("tablaLibros");
+        divLibros.insertBefore(botonAgregar, tabla);
         divLibros.insertBefore(form, tabla);
     }
 }
@@ -211,18 +262,20 @@ function renderUsuarios() {
         celdaLibros.textContent = usuario.librosPrestados;
         
         const celdaAcciones = document.createElement("td");
-        const botonEliminar = document.createElement("button");
-        botonEliminar.textContent = "Eliminar";
-        botonEliminar.onclick = function() {
-            eliminarUsuario(usuario.id);
-        };
         
         if (usuario.tienePrestamos()) {
-            botonEliminar.disabled = true;
-            botonEliminar.title = "No se puede eliminar un usuario con préstamos activos";
+            celdaAcciones.textContent = "No disponible";
+        } else {
+            const botonEliminar = document.createElement("button");
+            botonEliminar.textContent = "Eliminar";
+            botonEliminar.onclick = function() {
+                eliminarUsuario(usuario.id);
+            };
+            botonEliminar.style.backgroundColor = "#dc3545";
+            botonEliminar.style.color = "white";
+            
+            celdaAcciones.appendChild(botonEliminar);
         }
-        
-        celdaAcciones.appendChild(botonEliminar);
         
         fila.appendChild(celdaId);
         fila.appendChild(celdaNombre);
